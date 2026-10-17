@@ -1,0 +1,507 @@
+{
+  "schema": "omniseek.findings/v1",
+  "tool": {
+    "name": "omniseek",
+    "version": "0.1.0"
+  },
+  "generated_at": "2026-10-16T12:00:00Z",
+  "repo": {
+    "root": ".",
+    "name": "vulnerable_app",
+    "commit": null,
+    "is_git": false,
+    "files_scanned": 5,
+    "files_truncated": false,
+    "root_files": [
+      "Dockerfile",
+      "README.md",
+      "app.py",
+      "requirements.txt"
+    ],
+    "languages": {
+      "dockerfile": 1,
+      "javascript": 1,
+      "markdown": 1,
+      "python": 1
+    }
+  },
+  "analyzer": {
+    "mode": "heuristic+llm",
+    "model": "example/model",
+    "lenses": [
+      "architecture",
+      "security",
+      "performance",
+      "product"
+    ],
+    "rules": 47
+  },
+  "summary": {
+    "total": 19,
+    "by_severity": {
+      "critical": 1,
+      "high": 6,
+      "medium": 7,
+      "low": 5,
+      "info": 0
+    },
+    "by_lens": {
+      "architecture": 1,
+      "security": 11,
+      "performance": 5,
+      "product": 2
+    }
+  },
+  "findings": [
+    {
+      "id": "OSK-CECC4266E007",
+      "rule_id": "product/missing-license",
+      "lens": "product",
+      "severity": "high",
+      "confidence": "high",
+      "title": "No license file",
+      "description": "There is no LICENSE file.",
+      "remediation": [
+        "Add a LICENSE file with the full text of the license you chose."
+      ],
+      "citations": [
+        {
+          "kind": "absence",
+          "paths": [],
+          "globs": [
+            "license",
+            "license.*",
+            "licence",
+            "licence.*",
+            "copying",
+            "copying.*",
+            "unlicense"
+          ],
+          "note": "no license file at the repository root"
+        }
+      ],
+      "source": "heuristic"
+    },
+    {
+      "id": "OSK-3259318D5A6D",
+      "rule_id": "security/sql-string-building",
+      "lens": "security",
+      "severity": "high",
+      "confidence": "medium",
+      "title": "SQL built from strings",
+      "description": "`find_user` in app.py formats values into the SQL passed to `conn.execute()`.",
+      "remediation": [
+        "Use parameterized queries: cursor.execute(\"... WHERE id = %s\", (user_id,)).",
+        "For dynamic identifiers, choose from an allow-list instead of formatting input in."
+      ],
+      "citations": [
+        {
+          "kind": "span",
+          "path": "app.py",
+          "start_line": 17,
+          "end_line": 17,
+          "snippet": "return conn.execute(f\"SELECT id, email FROM users WHERE name = '{name}'\").fetchone()"
+        }
+      ],
+      "source": "heuristic"
+    },
+    {
+      "id": "OSK-DA1DD00C48E7",
+      "rule_id": "security/shell-injection",
+      "lens": "security",
+      "severity": "high",
+      "confidence": "high",
+      "title": "Command built for a shell",
+      "description": "`export_report` in app.py runs a computed command through a shell (`subprocess.run(..., shell=True)`).",
+      "remediation": [
+        "Pass an argument list without a shell: subprocess.run([\"tool\", arg], check=True).",
+        "Validate arguments against an allow-list; never interpolate them into a command string."
+      ],
+      "citations": [
+        {
+          "kind": "span",
+          "path": "app.py",
+          "start_line": 21,
+          "end_line": 21,
+          "snippet": "subprocess.run(f\"tar czf /tmp/{report_name}.tgz reports/{report_name}\", shell=True, check=True)"
+        }
+      ],
+      "source": "heuristic"
+    },
+    {
+      "id": "OSK-3D8BFA4449DB",
+      "rule_id": "security/unsafe-deserialization",
+      "lens": "security",
+      "severity": "high",
+      "confidence": "medium",
+      "title": "Unsafe deserialization",
+      "description": "`load_session` in app.py deserializes with `pickle.loads()`, which can execute code embedded in the data.",
+      "remediation": [
+        "Use a data-only format (JSON) for anything that crosses a trust boundary.",
+        "For YAML use yaml.safe_load or Loader=yaml.SafeLoader."
+      ],
+      "citations": [
+        {
+          "kind": "span",
+          "path": "app.py",
+          "start_line": 25,
+          "end_line": 25,
+          "snippet": "return pickle.loads(blob)"
+        }
+      ],
+      "source": "heuristic"
+    },
+    {
+      "id": "OSK-EBCA920A3BE2",
+      "rule_id": "security/dangerous-eval",
+      "lens": "security",
+      "severity": "high",
+      "confidence": "medium",
+      "title": "Dynamic code execution",
+      "description": "`calculate` in app.py passes a runtime value to `eval()`.",
+      "remediation": [
+        "Replace eval with a parser for the expected format (json.loads, ast.literal_eval, a lookup table).",
+        "If dynamic code is truly required, never pass it data that crosses a trust boundary."
+      ],
+      "citations": [
+        {
+          "kind": "span",
+          "path": "app.py",
+          "start_line": 40,
+          "end_line": 40,
+          "snippet": "return eval(expression)",
+          "symbol": "eval"
+        }
+      ],
+      "source": "heuristic"
+    },
+    {
+      "id": "OSK-63374BBBD3D6",
+      "rule_id": "security/container-runs-as-root",
+      "lens": "security",
+      "severity": "medium",
+      "confidence": "medium",
+      "title": "Container runs as root",
+      "description": "The final stage of Dockerfile (from line 3) never sets USER, so it runs as root.",
+      "remediation": [
+        "Create a system user in the image and add USER <name> before the entrypoint."
+      ],
+      "citations": [
+        {
+          "kind": "span",
+          "path": "Dockerfile",
+          "start_line": 3,
+          "end_line": 3,
+          "snippet": "FROM python:latest"
+        }
+      ],
+      "source": "heuristic"
+    },
+    {
+      "id": "OSK-827534DE8D31",
+      "rule_id": "product/readme-missing-quickstart",
+      "lens": "product",
+      "severity": "medium",
+      "confidence": "medium",
+      "title": "README has no install or usage section",
+      "description": "README.md has 1 heading(s) and none covers installing, running or using the project.",
+      "remediation": [
+        "Add an Install / Quickstart section with copy-pasteable commands."
+      ],
+      "citations": [
+        {
+          "kind": "span",
+          "path": "README.md",
+          "start_line": 1,
+          "end_line": 1,
+          "snippet": "# Demo service"
+        }
+      ],
+      "source": "heuristic"
+    },
+    {
+      "id": "OSK-70B6EE0BB28F",
+      "rule_id": "performance/io-in-loop",
+      "lens": "performance",
+      "severity": "medium",
+      "confidence": "medium",
+      "title": "Network or database call inside a loop",
+      "description": "`fetch_avatars` in app.py calls `requests.get()` inside a loop: one round trip per iteration.",
+      "remediation": [
+        "Batch the work: one query with IN (...), a bulk API, or prefetching related rows.",
+        "If calls must stay separate, run them concurrently with a bounded pool."
+      ],
+      "citations": [
+        {
+          "kind": "span",
+          "path": "app.py",
+          "start_line": 35,
+          "end_line": 35,
+          "snippet": "avatars.append(requests.get(f\"https://avatars.example.com/{user_id}\", timeout=5).content)"
+        }
+      ],
+      "source": "heuristic"
+    },
+    {
+      "id": "OSK-82CE8CF85402",
+      "rule_id": "performance/blocking-call-in-async",
+      "lens": "performance",
+      "severity": "medium",
+      "confidence": "medium",
+      "title": "Blocking call inside async code",
+      "description": "`send_email` in app.py is `async` but calls the blocking `requests.post()`.",
+      "remediation": [
+        "Use the async equivalent (asyncio.sleep, an async HTTP client, asyncio.create_subprocess_exec).",
+        "Or move the blocking call to a worker thread with asyncio.to_thread."
+      ],
+      "citations": [
+        {
+          "kind": "span",
+          "path": "app.py",
+          "start_line": 49,
+          "end_line": 49,
+          "snippet": "requests.post(\"https://mail.example.com/send\", json={\"to\": user}, timeout=5)"
+        }
+      ],
+      "source": "heuristic"
+    },
+    {
+      "id": "OSK-E013E0C1AD90",
+      "rule_id": "security/xss-sink",
+      "lens": "security",
+      "severity": "medium",
+      "confidence": "medium",
+      "title": "Raw HTML sink",
+      "description": "web/render.js:6 assigns computed markup to innerHTML/outerHTML.",
+      "remediation": [
+        "Set textContent, or render through the framework's escaping.",
+        "If HTML is required, sanitize it with a maintained sanitizer (for example DOMPurify)."
+      ],
+      "citations": [
+        {
+          "kind": "span",
+          "path": "web/render.js",
+          "start_line": 6,
+          "end_line": 6,
+          "snippet": "container.innerHTML = `<p class=\"comment\">${comment.body}</p>`;"
+        }
+      ],
+      "source": "heuristic"
+    },
+    {
+      "id": "OSK-B16201E4CCEF",
+      "rule_id": "performance/async-foreach",
+      "lens": "performance",
+      "severity": "medium",
+      "confidence": "medium",
+      "title": "async callback passed to forEach",
+      "description": "web/render.js:10 passes an async callback to forEach.",
+      "remediation": [
+        "Use for...of with await, or await Promise.all(items.map(async ...))."
+      ],
+      "citations": [
+        {
+          "kind": "span",
+          "path": "web/render.js",
+          "start_line": 10,
+          "end_line": 10,
+          "snippet": "items.forEach(async (item) => {"
+        }
+      ],
+      "source": "heuristic"
+    },
+    {
+      "id": "OSK-0A4175A6ED4F",
+      "rule_id": "security/unpinned-base-image",
+      "lens": "security",
+      "severity": "low",
+      "confidence": "medium",
+      "title": "Unpinned base image",
+      "description": "Dockerfile:3 builds FROM `python:latest` without a fixed version.",
+      "remediation": [
+        "Pin an explicit version tag, ideally with an @sha256 digest."
+      ],
+      "citations": [
+        {
+          "kind": "span",
+          "path": "Dockerfile",
+          "start_line": 3,
+          "end_line": 3,
+          "snippet": "FROM python:latest"
+        }
+      ],
+      "source": "heuristic"
+    },
+    {
+      "id": "OSK-2F7DCB918DF9",
+      "rule_id": "security/weak-hash",
+      "lens": "security",
+      "severity": "low",
+      "confidence": "low",
+      "title": "MD5 or SHA-1 hash",
+      "description": "`fingerprint` in app.py uses `hashlib.md5()` without usedforsecurity=False.",
+      "remediation": [
+        "Use hashlib.sha256 (or blake2b) for integrity, and bcrypt/scrypt/argon2 for passwords.",
+        "If the hash is not security-relevant, pass usedforsecurity=False to make that explicit."
+      ],
+      "citations": [
+        {
+          "kind": "span",
+          "path": "app.py",
+          "start_line": 29,
+          "end_line": 29,
+          "snippet": "return hashlib.md5(password.encode()).hexdigest()"
+        }
+      ],
+      "source": "heuristic"
+    },
+    {
+      "id": "OSK-8DBAD6236502",
+      "rule_id": "performance/sequential-await",
+      "lens": "performance",
+      "severity": "low",
+      "confidence": "low",
+      "title": "Awaits run one at a time in a loop",
+      "description": "`notify` in app.py awaits `send_email` once per loop iteration, one after another.",
+      "remediation": [
+        "Collect the coroutines and await them together (asyncio.gather or a TaskGroup) with a concurrency limit."
+      ],
+      "citations": [
+        {
+          "kind": "span",
+          "path": "app.py",
+          "start_line": 44,
+          "end_line": 45,
+          "snippet": "await send_email(user)"
+        }
+      ],
+      "source": "heuristic"
+    },
+    {
+      "id": "OSK-53CDD656CCE0",
+      "rule_id": "security/unpinned-dependency",
+      "lens": "security",
+      "severity": "low",
+      "confidence": "medium",
+      "title": "Unpinned dependency",
+      "description": "requirements.txt lists 2 requirement(s) without an exact `==` version.",
+      "remediation": [
+        "Pin exact versions in application manifests, or commit a lockfile.",
+        "Let a bot (Dependabot, Renovate) propose upgrades as reviewable changes."
+      ],
+      "citations": [
+        {
+          "kind": "span",
+          "path": "requirements.txt",
+          "start_line": 1,
+          "end_line": 1,
+          "snippet": "requests>=2.0"
+        },
+        {
+          "kind": "span",
+          "path": "requirements.txt",
+          "start_line": 2,
+          "end_line": 2,
+          "snippet": "flask"
+        }
+      ],
+      "source": "heuristic",
+      "evidence": {
+        "unpinned": 2
+      }
+    },
+    {
+      "id": "OSK-1B3BF139C3D2",
+      "rule_id": "performance/json-deep-clone",
+      "lens": "performance",
+      "severity": "low",
+      "confidence": "medium",
+      "title": "Deep clone through JSON",
+      "description": "web/render.js:16 deep-clones through JSON.",
+      "remediation": [
+        "Use structuredClone(x)."
+      ],
+      "citations": [
+        {
+          "kind": "span",
+          "path": "web/render.js",
+          "start_line": 16,
+          "end_line": 16,
+          "snippet": "return JSON.parse(JSON.stringify(state));"
+        }
+      ],
+      "source": "heuristic"
+    },
+    {
+      "rule_id": "llm/architecture",
+      "lens": "architecture",
+      "severity": "medium",
+      "confidence": "high",
+      "title": "Every lookup opens a new SQLite connection and never closes it",
+      "description": "find_user creates a connection per call and returns without closing it, so busy endpoints leak file handles and pay connection setup on every request.",
+      "remediation": [
+        "Open one connection per request (or use a pool) and close it in a finally block or with a context manager.",
+        "Add a test that calls find_user in a loop and checks open file descriptors."
+      ],
+      "citations": [
+        {
+          "kind": "span",
+          "path": "app.py",
+          "start_line": 15,
+          "end_line": 17,
+          "snippet": "conn = sqlite3.connect(DATABASE)",
+          "symbol": "find_user"
+        }
+      ],
+      "source": "llm:example/model",
+      "id": "OSK-36C166E9AD7B"
+    },
+    {
+      "rule_id": "llm/security",
+      "lens": "security",
+      "severity": "high",
+      "confidence": "medium",
+      "title": "Report export lets callers write archives of arbitrary paths",
+      "description": "report_name flows unchecked into both the archive name and the source directory, so ../ sequences reach outside reports/. (This citation's line numbers are deliberately wrong to show drift detection.)",
+      "remediation": [
+        "Accept only report names that match ^[a-z0-9-]+$.",
+        "Build the paths with pathlib and reject anything that resolves outside reports/."
+      ],
+      "citations": [
+        {
+          "kind": "span",
+          "path": "app.py",
+          "start_line": 30,
+          "end_line": 31,
+          "snippet": "subprocess.run(f\"tar czf /tmp/{report_name}.tgz reports/{report_name}\", shell=True, check=True)",
+          "symbol": "export_report"
+        }
+      ],
+      "source": "llm:example/model",
+      "id": "OSK-A29E8EA76C46"
+    },
+    {
+      "rule_id": "llm/security",
+      "lens": "security",
+      "severity": "critical",
+      "confidence": "high",
+      "title": "Session tokens are compared with a timing-unsafe equality check",
+      "description": "A planted hallucination: neither the file nor the code exists, so the verifier must flag it.",
+      "remediation": [
+        "Use hmac.compare_digest for token comparison."
+      ],
+      "citations": [
+        {
+          "kind": "span",
+          "path": "auth/session.py",
+          "start_line": 12,
+          "end_line": 14,
+          "snippet": "if token == stored_token:",
+          "symbol": "check_token"
+        }
+      ],
+      "source": "llm:example/model",
+      "id": "OSK-8451C9E52266"
+    }
+  ]
+}

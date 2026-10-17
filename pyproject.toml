@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 The OmniSeek Authors
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "omnirogue-omniseek"
+version = "0.1.0"
+description = "Citation-grounded, multi-lens codebase intelligence: scan a repository, verify every cited line, export an HTML dossier, SARIF or Markdown."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+requires-python = ">=3.10"
+authors = [{ name = "The OmniSeek Authors" }]
+keywords = ["code-review", "static-analysis", "sarif", "mcp", "llm", "security", "citations"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Operating System :: MacOS",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Security",
+  "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = []
+
+[project.optional-dependencies]
+httpx = ["httpx>=0.27"]
+mcp = ["mcp>=1.9"]
+all = ["httpx>=0.27", "mcp>=1.9"]
+
+[project.scripts]
+omniseek = "omniseek.cli:main"
+omniseek-mcp = "omniseek.mcp_server:main"
+
+[project.urls]
+Homepage = "https://github.com/omnirogue/omniseek"
+Issues = "https://github.com/omnirogue/omniseek/issues"
+Changelog = "https://github.com/omnirogue/omniseek/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+include = ["omniseek*"]

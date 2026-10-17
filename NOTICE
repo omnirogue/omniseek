@@ -1,0 +1,11 @@
+OmniSeek
+Copyright 2026 The OmniSeek Authors
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+OmniSeek is the open-source core of OmniSI. OmniSI Cloud and its Rust engine are
+separate proprietary products and are not part of this distribution.
+
+"OmniSeek" and "OmniSI" are product names of their owner. The Apache License
+does not grant permission to use these names except as required for reasonable
+and customary use in describing the origin of the work.

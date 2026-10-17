@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "package": "omniseek",
+  "version": "0.1.0",
+  "distribution_name": "omnirogue-omniseek",
+  "distribution_note": "PyPI distribution name chosen on 2026-10-16 because 'omniseek' on PyPI belongs to an unrelated project. The command, the import package and this directory stay omniseek.",
+  "license": "Apache-2.0",
+  "license_file": "LICENSE",
+  "license_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+  "public_repository": "https://github.com/omnirogue/omniseek",
+  "supersedes": "omnisi-discover",
+  "rust_included": false,
+  "approval": {
+    "decision": "D2/D3 open-source scope and license",
+    "approved_by": "OmniRogue Maintainers",
+    "terms": "Open-source reusable intelligence infrastructure under Apache-2.0 only (not dual MIT/Apache-2.0). Proprietary customer data, internal evaluation rubrics, business logic and competitive advantages stay private.",
+    "scope_note": "The OmniSeek release brief (16 Oct 2026) narrows the open-source export to a standalone Python package: no Rust code is exported."
+  },
+  "audit": {
+    "date": "2026-10-16",
+    "method": "Automated scan (oss/verify_apache2_and_scrub.sh omniseek) of this directory, a check that no Rust source file or crate manifest is present, and a manual review of every file for internal domains and hostnames, credential patterns, customer data, proprietary prompts and rubrics, and license declarations.",
+    "publication_ready": false
+  },
+  "included_crates": [],
+  "included_sources": [],
+  "package_files": [
+    ".github/workflows/ci.yml",
+    ".github/workflows/publish.yml",
+    ".gitignore",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "LICENSE",
+    "NOTICE",
+    "README.md",
+    "SECURITY.md",
+    "audit-manifest.json",
+    "examples/github-action-sarif.yml",
+    "examples/run_demo.sh",
+    "examples/sample_findings.json",
+    "examples/vulnerable_app/Dockerfile",
+    "examples/vulnerable_app/README.md",
+    "examples/vulnerable_app/app.py",
+    "examples/vulnerable_app/requirements.txt",
+    "examples/vulnerable_app/web/render.js",
+    "omniseek/__init__.py",
+    "omniseek/__main__.py",
+    "omniseek/_http.py",
+    "omniseek/_version.py",
+    "omniseek/analyzers/__init__.py",
+    "omniseek/analyzers/base.py",
+    "omniseek/analyzers/patterns.py",
+    "omniseek/analyzers/product.py",
+    "omniseek/analyzers/python_ast.py",
+    "omniseek/analyzers/structure.py",
+    "omniseek/cli.py",
+    "omniseek/cloud.py",
+    "omniseek/llm.py",
+    "omniseek/mcp_server.py",
+    "omniseek/model.py",
+    "omniseek/render/__init__.py",
+    "omniseek/render/html.py",
+    "omniseek/render/markdown.py",
+    "omniseek/render/sarif.py",
+    "omniseek/repo.py",
+    "omniseek/rules.py",
+    "omniseek/scan.py",
+    "omniseek/verify.py",
+    "pyproject.toml",
+    "tests/helpers.py",
+    "tests/test_cli.py",
+    "tests/test_llm_cloud.py",
+    "tests/test_mcp.py",
+    "tests/test_render.py",
+    "tests/test_scan.py",
+    "tests/test_verify.py"
+  ],
+  "derived_work": [
+    {
+      "component": "omniseek/verify.py",
+      "basis": "Re-implements the citation-checking patterns of the private OmniSI Discover citation verifier (whitespace-normalized quote matching, fail-closed per-claim results, explicit handling of empty input) for file:line spans. No code was copied, and no prompt, rubric or semantic evaluator is included."
+    }
+  ],
+  "excluded_private_assets": [
+    {
+      "asset": "The OmniRogue Rust Engine: every Rust crate, including the Discover types, ingest, engine, triage, report, server and CLI crates and the omnisi-mcp transport",
+      "path": "the private Rust workspace",
+      "reason": "Proprietary. It powers OmniSI Cloud and is not exported in any form."
+    },
+    {
+      "asset": "Hosted verifier prompts, rubrics and the cross-family adversarial verification pipeline",
+      "path": "the private Rust workspace and hosted configuration",
+      "reason": "Internal evaluation rubrics and proprietary prompts. OmniSeek's model prompt (omniseek/llm.py) was written for this release."
+    },
+    {
+      "asset": "Customer evidence packs, uploaded files, run results and organization memory",
+      "path": "hosted Postgres data",
+      "reason": "Customer data."
+    },
+    {
+      "asset": "Production credentials, deployment configuration and fleet hostnames",
+      "path": "environment variables and deployment repositories",
+      "reason": "Secrets and internal infrastructure."
+    }
+  ],
+  "release_blockers": [
+    {
+      "id": "publish-approval",
+      "path": "README.md",
+      "finding": "github.com/omnirogue/omniseek does not exist yet, and nothing has been pushed or uploaded. The README's install commands (PyPI and git) and the example workflow's pinned 0.1.0 only work once the release exists.",
+      "required_fix": "The maintainers approve the release; then create the repository, push the staged tree, tag v0.1.0 and upload omnirogue-omniseek 0.1.0 to PyPI (the name was unregistered on 2026-10-16)."
+    },
+    {
+      "id": "cloud-endpoint",
+      "path": "omniseek/cloud.py",
+      "finding": "cloud-sync posts to https://api.omnirogue.com/v1/omniseek/scans. That endpoint was not built or exercised in this release; only a local stub server was.",
+      "required_fix": "Ship the OmniSI Cloud endpoint for the omniseek.cloud-sync/v1 payload, or keep cloud-sync documented as coming soon."
+    }
+  ],
+  "verification": {
+    "command": "bash oss/verify_apache2_and_scrub.sh omniseek",
+    "release_command": "bash oss/verify_apache2_and_scrub.sh --release omniseek",
+    "verified": [
+      "2026-10-16, fleet host (macOS): python -m unittest discover -s tests, 53 tests passing on Python 3.10 and 3.13 with ResourceWarning as an error.",
+      "2026-10-16: omniseek-mcp --transport streamable-http answered initialize, tools/list and a verify call from the official MCP Python SDK client, 1.x (1.30.0) and 2.x (2.3.0).",
+      "2026-10-16: scan of the staged standalone repository and verify of its own findings, grounding_score 1.0; examples/run_demo.sh end to end."
+    ],
+    "unverified": [
+      "The GitHub Actions workflows (.github/workflows/ci.yml and examples/github-action-sarif.yml) have not run; the repository does not exist yet.",
+      "Live model providers were exercised only through a local stub server that speaks each provider's request and reply format; no real OpenAI, Anthropic or Gemini call was made.",
+      "Windows is not tested."
+    ]
+  },
+  "known_limitations": [
+    "Heuristic rules are pattern based. They report likely problems with evidence and can be wrong; verification proves the cited lines exist, not that a finding is correct.",
+    "Python rules use the syntax tree; JavaScript, TypeScript, shell, CI and container rules are line based.",
+    "Import cycles are detected for Python and for relative JavaScript/TypeScript imports only."
+  ]
+}

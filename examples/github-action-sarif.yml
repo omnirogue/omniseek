@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 The OmniSeek Authors
+#
+# Example: copy to .github/workflows/omniseek.yml in your repository. Uploads findings to
+# GitHub code scanning (Security -> Code scanning) and keeps the HTML dossier as an artifact.
+name: omniseek
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+  security-events: write
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install "omnirogue-omniseek==0.1.0"
+      # Add --fail-on high to fail the job on high or critical findings.
+      - run: omniseek scan . --output omniseek-findings.json --sarif omniseek.sarif --html omniseek-dossier.html --md omniseek.md
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: omniseek.sarif
+          category: omniseek
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: omniseek-dossier
+          path: |
+            omniseek-dossier.html
+            omniseek-findings.json
+            omniseek.md
